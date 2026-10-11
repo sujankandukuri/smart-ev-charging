@@ -2,109 +2,647 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Smart EV Charging</title>
-<style>
-body{font-family:Arial;background:#f1f5f9;margin:0;color:#172033}
-header,nav{background:#12352b;color:white;padding:18px}
-nav{display:flex;gap:12px;flex-wrap:wrap}
-nav a{color:white;text-decoration:none;padding:10px}
-main{max-width:900px;margin:25px auto;padding:15px}
-section{background:white;padding:20px;margin:15px 0;border-radius:10px}
-input{padding:10px;margin:8px 0;width:90%;max-width:350px}
-button{padding:10px 15px;background:#15803d;color:white;border:0;border-radius:6px;cursor:pointer}
-.station{padding:15px;border:1px solid #ddd;margin:10px 0;border-radius:8px}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart EV Charging Network</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            color: #172033;
+        }
+
+        header {
+            background: #12352b;
+            color: white;
+            text-align: center;
+            padding: 25px;
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            background: #1e293b;
+            padding: 15px;
+        }
+
+        nav button {
+            padding: 12px 18px;
+            background: transparent;
+            border: 1px solid white;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+        }
+
+        nav button.active,
+        nav button:hover {
+            background: #16a34a;
+        }
+
+        main {
+            max-width: 950px;
+            margin: 25px auto;
+            padding: 0 15px;
+        }
+
+        .page {
+            display: none;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        h2 {
+            color: #166534;
+        }
+
+        input {
+            display: block;
+            width: 100%;
+            max-width: 400px;
+            padding: 12px;
+            margin: 12px 0;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+        }
+
+        .action {
+            background: #15803d;
+            color: white;
+            padding: 11px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px 0;
+        }
+
+        .action:hover {
+            background: #166534;
+        }
+
+        .card,
+        .station {
+            background: #f8fafc;
+            border: 1px solid #dbe3ec;
+            padding: 18px;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+
+        .message {
+            margin: 15px 0;
+            padding: 12px;
+            border-radius: 6px;
+            overflow-wrap: anywhere;
+        }
+
+        .success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0 25px;
+        }
+
+        th, td {
+            border: 1px solid #cbd5e1;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background: #ecfdf5;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #64748b;
+        }
+    </style>
 </head>
+
 <body>
+
 <header>
-<h1>⚡ Smart EV Charging Network</h1>
-<p>Registration, charging slots and management dashboard</p>
+    <h1>&#9889; Smart EV Charging Network</h1>
+    <p>Charging Station Planning and Management System</p>
 </header>
+
 <nav>
-<a href="#home">Home</a>
-<a href="#register">Register</a>
-<a href="#stations">Stations & Booking</a>
-<a href="#admin">Admin Dashboard</a>
+    <button class="active" data-page="home"
+        onclick="navigate('home')">Home</button>
+
+    <button data-page="register"
+        onclick="navigate('register')">Register</button>
+
+    <button data-page="stations"
+        onclick="navigate('stations')">Stations &amp; Booking</button>
+
+    <button data-page="admin"
+        onclick="navigate('admin')">Admin Dashboard</button>
 </nav>
+
 <main>
-<section id="home">
-<h2>Welcome</h2>
-<p>Register and book an EV charging slot.</p>
-</section>
 
-<section id="register">
-<h2>User Registration</h2>
-<form id="regForm">
-<input id="name" placeholder="Full name" required><br>
-<input id="email" type="email" placeholder="Email address" required><br>
-<button>Register</button>
-</form>
-<p id="regMsg"></p>
-</section>
+    <!-- HOME -->
+    <section id="home" class="page active">
+        <h2>Welcome to Smart EV Charging</h2>
 
-<section id="stations">
-<h2>Charging Stations</h2>
-<input id="bookEmail" type="email" placeholder="Registered email">
-<button onclick="loadStations()">Refresh Stations</button>
-<div id="stationsList"></div>
-<p id="stationMsg"></p>
-</section>
+        <p>
+            Find charging stations, register your details,
+            and book charging slots for your electric vehicle.
+        </p>
 
-<section id="admin">
-<h2>Admin Dashboard</h2>
-<button onclick="loadAdmin()">Refresh Dashboard</button>
-<div id="summary"></div>
-<h3>Registered Users</h3><div id="users"></div>
-<h3>Charging Stations</h3><div id="adminStations"></div>
-<h3>Bookings</h3><div id="bookings"></div>
-</section>
+        <div class="card">
+            <h3>User Registration</h3>
+            <p>Register before booking a charging slot.</p>
+            <button class="action" onclick="navigate('register')">
+                Register Now
+            </button>
+        </div>
+
+        <div class="card">
+            <h3>Charging Stations</h3>
+            <p>View stations and book available slots.</p>
+            <button class="action" onclick="navigate('stations')">
+                View Stations
+            </button>
+        </div>
+
+        <div class="card">
+            <h3>Management Dashboard</h3>
+            <p>View registration, station and booking information.</p>
+            <button class="action" onclick="navigate('admin')">
+                Open Dashboard
+            </button>
+        </div>
+    </section>
+
+    <!-- REGISTER -->
+    <section id="register" class="page">
+        <h2>User Registration</h2>
+        <p>Enter your name and email address.</p>
+
+        <form id="registerForm">
+            <label for="name">Full Name</label>
+            <input id="name" name="name" type="text"
+                placeholder="Enter your name" required>
+
+            <label for="email">Email Address</label>
+            <input id="email" name="email" type="email"
+                placeholder="Enter your email" required>
+
+            <button class="action" type="submit">Register</button>
+        </form>
+
+        <div id="registerMessage" aria-live="polite"></div>
+    </section>
+
+    <!-- STATIONS -->
+    <section id="stations" class="page">
+        <h2>Charging Stations &amp; Booking</h2>
+
+        <p>Enter your registered email to book a station.</p>
+
+        <button class="action" onclick="loadStations()">
+            Refresh Stations
+        </button>
+
+        <div id="stationsMessage" aria-live="polite"></div>
+        <div id="stationsList">Click Refresh Stations to load data.</div>
+    </section>
+
+    <!-- ADMIN -->
+    <section id="admin" class="page">
+        <h2>Admin Dashboard</h2>
+
+        <button class="action" onclick="loadDashboard()">
+            Refresh Dashboard
+        </button>
+
+        <div id="adminMessage" aria-live="polite"></div>
+
+        <div class="card">
+            Total Registrations:
+            <strong id="totalRegistrations">-</strong>
+        </div>
+
+        <div class="card">
+            Total Stations:
+            <strong id="totalStations">-</strong>
+        </div>
+
+        <div class="card">
+            Total Bookings:
+            <strong id="totalBookings">-</strong>
+        </div>
+
+        <h3>Registered Users</h3>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr><th>Name</th><th>Email</th></tr>
+                </thead>
+                <tbody id="registrationsTable">
+                    <tr><td colspan="2">No data loaded.</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>Charging Stations</h3>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th><th>Name</th>
+                        <th>Location</th><th>Available Slots</th>
+                    </tr>
+                </thead>
+                <tbody id="adminStationsTable">
+                    <tr><td colspan="4">No data loaded.</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>Bookings</h3>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Booking ID</th><th>Station</th>
+                        <th>Email</th><th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="bookingsTable">
+                    <tr><td colspan="4">No data loaded.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
 </main>
 
+<footer>
+    Smart EV Charging Network Planning and Management System
+</footer>
+
 <script>
-async function api(url,options={}){
- const r=await fetch(url,options);
- const d=await r.json();
- if(!r.ok) throw Error(d.message||"Request failed");
- return d;
-}
-document.getElementById("regForm").addEventListener("submit",async e=>{
- e.preventDefault();
- try{
-  const d=await api("/api/register",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:document.getElementById("name").value,email:document.getElementById("email").value})});
-  document.getElementById("regMsg").textContent=d.message;
-  if(d.success) document.getElementById("bookEmail").value=document.getElementById("email").value;
- }catch(err){document.getElementById("regMsg").textContent=err.message;}
-});
-async function loadStations(){
- try{
-  const data=await api("/api/stations"),list=document.getElementById("stationsList");
-  list.replaceChildren();
-  data.forEach(s=>{
-   const div=document.createElement("div");div.className="station";
-   const title=document.createElement("h3");title.textContent=s.name;
-   const info=document.createElement("p");info.textContent=s.location+" | Available: "+(s.availableSlots??s.capacity-s.occupied)+" / "+s.capacity;
-   const btn=document.createElement("button");btn.textContent="Book Slot";
-   btn.onclick=async()=>{
-    try{
-     const result=await api("/api/stations/"+s.id+"/book",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:document.getElementById("bookEmail").value})});
-     document.getElementById("stationMsg").textContent=result.message;loadStations();
-    }catch(err){document.getElementById("stationMsg").textContent=err.message;}
-   };
-   div.append(title,info,btn);list.appendChild(div);
-  });
- }catch(err){document.getElementById("stationMsg").textContent="Could not load stations: "+err.message;}
-}
-async function loadAdmin(){
- try{
-  const [s,u,st,b]=await Promise.all([api("/api/admin/summary"),api("/api/admin/registrations"),api("/api/admin/stations"),api("/api/admin/bookings")]);
-  document.getElementById("summary").textContent="Users: "+s.totalUsers+" | Stations: "+s.totalStations+" | Bookings: "+s.totalBookings+" | Occupied slots: "+s.occupiedSlots+" | Available slots: "+s.availableSlots;
-  document.getElementById("users").textContent=u.length?u.map(x=>x.name+" ("+x.email+")").join(" | "):"No users registered";
-  document.getElementById("adminStations").textContent=st.map(x=>x.name+": "+x.occupied+" occupied, "+(x.availableSlots??x.capacity-x.occupied)+" available").join(" | ");
-  document.getElementById("bookings").textContent=b.length?b.map(x=>"#"+x.id+" "+x.stationName+" - "+x.status+" - "+x.userEmail).join(" | "):"No bookings yet";
- }catch(err){document.getElementById("summary").textContent="Could not load dashboard: "+err.message;}
-}
+    const API = "/api";
+
+    // NAVIGATION
+    function navigate(pageId) {
+        document.querySelectorAll(".page").forEach(page => {
+            page.classList.remove("active");
+        });
+
+        document.getElementById(pageId).classList.add("active");
+
+        document.querySelectorAll("nav button").forEach(button => {
+            button.classList.toggle(
+                "active",
+                button.dataset.page === pageId
+            );
+        });
+
+        if (pageId === "stations") {
+            loadStations();
+        }
+
+        if (pageId === "admin") {
+            loadDashboard();
+        }
+
+        window.scrollTo(0, 0);
+    }
+
+    // API REQUEST
+    async function apiRequest(path, options = {}) {
+        const response = await fetch(API + path, {
+            ...options,
+            headers: {
+                "Content-Type": "application/json",
+                ...(options.headers || {})
+            }
+        });
+
+        const text = await response.text();
+        let data;
+
+        try {
+            data = text ? JSON.parse(text) : {};
+        } catch {
+            data = text;
+        }
+
+        if (!response.ok) {
+            throw new Error(
+                typeof data === "string"
+                    ? data
+                    : data.message || data.error || "Request failed"
+            );
+        }
+
+        return data;
+    }
+
+    function showMessage(id, message, isError = false) {
+        const element = document.getElementById(id);
+        element.textContent = message;
+        element.className = "message " +
+            (isError ? "error" : "success");
+    }
+
+    function listData(data) {
+        if (Array.isArray(data)) return data;
+        if (data && Array.isArray(data.content)) return data.content;
+        if (data && Array.isArray(data.data)) return data.data;
+        return [];
+    }
+
+    function valueOf(object, keys, fallback = "-") {
+        for (const key of keys) {
+            if (object && object[key] !== undefined &&
+                object[key] !== null) {
+                return object[key];
+            }
+        }
+        return fallback;
+    }
+
+    function safe(value) {
+        return String(value ?? "").replace(/[&<>"']/g, char => ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+        })[char]);
+    }
+
+    // REGISTER USER
+    document.getElementById("registerForm")
+        .addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            const name = document.getElementById("name").value.trim();
+            const email = document.getElementById("email").value.trim();
+
+            try {
+                const result = await apiRequest("/register", {
+                    method: "POST",
+                    body: JSON.stringify({ name, email })
+                });
+
+                showMessage(
+                    "registerMessage",
+                    typeof result === "string"
+                        ? result
+                        : result.message || "Registration successful!"
+                );
+
+                this.reset();
+            } catch (error) {
+                showMessage("registerMessage", error.message, true);
+            }
+        });
+
+    // LOAD STATIONS
+    async function loadStations() {
+        const container = document.getElementById("stationsList");
+        container.textContent = "Loading stations...";
+
+        try {
+            const data = await apiRequest("/stations");
+            const stations = listData(data);
+
+            if (!stations.length) {
+                container.textContent = "No stations found.";
+                return;
+            }
+
+            container.innerHTML = stations.map(station => {
+                const id = valueOf(station, ["id", "stationId"]);
+                const name = valueOf(station, ["name", "stationName"]);
+                const location = valueOf(station, ["location", "address"]);
+                const capacity = valueOf(station, ["capacity", "totalSlots"]);
+                const available = valueOf(
+                    station,
+                    ["availableSlots", "available", "availableCapacity"]
+                );
+
+                return `
+                    <div class="station">
+                        <h3>${safe(name)}</h3>
+                        <p>Station ID: ${safe(id)}</p>
+                        <p>Location: ${safe(location)}</p>
+                        <p>Total Capacity: ${safe(capacity)}</p>
+                        <p>Available Slots: ${safe(available)}</p>
+
+                        <label for="email-${safe(id)}">
+                            Registered Email
+                        </label>
+
+                        <input type="email" id="email-${safe(id)}"
+                            placeholder="Enter registered email">
+
+                        <button class="action"
+                            onclick="bookStation('${safe(id)}')">
+                            Book Slot
+                        </button>
+
+                        <button class="action"
+                            onclick="completeBooking('${safe(id)}')">
+                            Complete Booking
+                        </button>
+                    </div>`;
+            }).join("");
+        } catch (error) {
+            container.textContent = "Could not load stations: " +
+                error.message;
+        }
+    }
+
+    // BOOK SLOT
+    async function bookStation(id) {
+        const email = document.getElementById("email-" + id)
+            .value.trim();
+
+        if (!email) {
+            showMessage(
+                "stationsMessage",
+                "Enter your registered email.",
+                true
+            );
+            return;
+        }
+
+        try {
+            const result = await apiRequest(
+                "/stations/" + encodeURIComponent(id) + "/book",
+                {
+                    method: "POST",
+                    body: JSON.stringify({ email })
+                }
+            );
+
+            showMessage(
+                "stationsMessage",
+                typeof result === "string"
+                    ? result
+                    : result.message || "Booking successful!"
+            );
+
+            await loadStations();
+        } catch (error) {
+            showMessage("stationsMessage", error.message, true);
+        }
+    }
+
+    // COMPLETE BOOKING
+    async function completeBooking(id) {
+        const email = document.getElementById("email-" + id)
+            .value.trim();
+
+        if (!email) {
+            showMessage(
+                "stationsMessage",
+                "Enter your registered email.",
+                true
+            );
+            return;
+        }
+
+        try {
+            const result = await apiRequest(
+                "/stations/" + encodeURIComponent(id) + "/complete",
+                {
+                    method: "POST",
+                    body: JSON.stringify({ email })
+                }
+            );
+
+            showMessage(
+                "stationsMessage",
+                typeof result === "string"
+                    ? result
+                    : result.message || "Booking completed."
+            );
+
+            await loadStations();
+        } catch (error) {
+            showMessage("stationsMessage", error.message, true);
+        }
+    }
+
+    // ADMIN DASHBOARD
+    async function loadDashboard() {
+        showMessage("adminMessage", "Loading dashboard...");
+
+        try {
+            const [summary, registrationsData, stationsData, bookingsData] =
+                await Promise.all([
+                    apiRequest("/admin/summary"),
+                    apiRequest("/admin/registrations"),
+                    apiRequest("/admin/stations"),
+                    apiRequest("/admin/bookings")
+                ]);
+
+            const registrations = listData(registrationsData);
+            const stations = listData(stationsData);
+            const bookings = listData(bookingsData);
+
+            document.getElementById("totalRegistrations").textContent =
+                valueOf(
+                    summary,
+                    ["totalRegistrations", "registrationsCount"],
+                    registrations.length
+                );
+
+            document.getElementById("totalStations").textContent =
+                valueOf(
+                    summary,
+                    ["totalStations", "stationsCount"],
+                    stations.length
+                );
+
+            document.getElementById("totalBookings").textContent =
+                valueOf(
+                    summary,
+                    ["totalBookings", "bookingsCount"],
+                    bookings.length
+                );
+
+            document.getElementById("registrationsTable").innerHTML =
+                registrations.length
+                    ? registrations.map(user => `
+                        <tr>
+                            <td>${safe(valueOf(user, ["name", "fullName"]))}</td>
+                            <td>${safe(valueOf(user, ["email"]))}</td>
+                        </tr>
+                    `).join("")
+                    : '<tr><td colspan="2">No registrations found.</td></tr>';
+
+            document.getElementById("adminStationsTable").innerHTML =
+                stations.length
+                    ? stations.map(station => `
+                        <tr>
+                            <td>${safe(valueOf(station, ["id", "stationId"]))}</td>
+                            <td>${safe(valueOf(station, ["name", "stationName"]))}</td>
+                            <td>${safe(valueOf(station, ["location", "address"]))}</td>
+                            <td>${safe(valueOf(station, ["availableSlots", "available"]))}</td>
+                        </tr>
+                    `).join("")
+                    : '<tr><td colspan="4">No stations found.</td></tr>';
+
+            document.getElementById("bookingsTable").innerHTML =
+                bookings.length
+                    ? bookings.map(booking => `
+                        <tr>
+                            <td>${safe(valueOf(booking, ["id", "bookingId"]))}</td>
+                            <td>${safe(valueOf(booking, ["stationName", "stationId"]))}</td>
+                            <td>${safe(valueOf(booking, ["email", "userEmail"]))}</td>
+                            <td>${safe(valueOf(booking, ["status", "bookingStatus"]))}</td>
+                        </tr>
+                    `).join("")
+                    : '<tr><td colspan="4">No bookings found.</td></tr>';
+
+            showMessage("adminMessage", "Dashboard loaded successfully.");
+        } catch (error) {
+            showMessage(
+                "adminMessage",
+                "Dashboard error: " + error.message,
+                true
+            );
+        }
+    }
 </script>
+
 </body>
 </html>
