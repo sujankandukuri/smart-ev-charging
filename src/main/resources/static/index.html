@@ -1,0 +1,110 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smart EV Charging</title>
+<style>
+body{font-family:Arial;background:#f1f5f9;margin:0;color:#172033}
+header,nav{background:#12352b;color:white;padding:18px}
+nav{display:flex;gap:12px;flex-wrap:wrap}
+nav a{color:white;text-decoration:none;padding:10px}
+main{max-width:900px;margin:25px auto;padding:15px}
+section{background:white;padding:20px;margin:15px 0;border-radius:10px}
+input{padding:10px;margin:8px 0;width:90%;max-width:350px}
+button{padding:10px 15px;background:#15803d;color:white;border:0;border-radius:6px;cursor:pointer}
+.station{padding:15px;border:1px solid #ddd;margin:10px 0;border-radius:8px}
+</style>
+</head>
+<body>
+<header>
+<h1>⚡ Smart EV Charging Network</h1>
+<p>Registration, charging slots and management dashboard</p>
+</header>
+<nav>
+<a href="#home">Home</a>
+<a href="#register">Register</a>
+<a href="#stations">Stations & Booking</a>
+<a href="#admin">Admin Dashboard</a>
+</nav>
+<main>
+<section id="home">
+<h2>Welcome</h2>
+<p>Register and book an EV charging slot.</p>
+</section>
+
+<section id="register">
+<h2>User Registration</h2>
+<form id="regForm">
+<input id="name" placeholder="Full name" required><br>
+<input id="email" type="email" placeholder="Email address" required><br>
+<button>Register</button>
+</form>
+<p id="regMsg"></p>
+</section>
+
+<section id="stations">
+<h2>Charging Stations</h2>
+<input id="bookEmail" type="email" placeholder="Registered email">
+<button onclick="loadStations()">Refresh Stations</button>
+<div id="stationsList"></div>
+<p id="stationMsg"></p>
+</section>
+
+<section id="admin">
+<h2>Admin Dashboard</h2>
+<button onclick="loadAdmin()">Refresh Dashboard</button>
+<div id="summary"></div>
+<h3>Registered Users</h3><div id="users"></div>
+<h3>Charging Stations</h3><div id="adminStations"></div>
+<h3>Bookings</h3><div id="bookings"></div>
+</section>
+</main>
+
+<script>
+async function api(url,options={}){
+ const r=await fetch(url,options);
+ const d=await r.json();
+ if(!r.ok) throw Error(d.message||"Request failed");
+ return d;
+}
+document.getElementById("regForm").addEventListener("submit",async e=>{
+ e.preventDefault();
+ try{
+  const d=await api("/api/register",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:document.getElementById("name").value,email:document.getElementById("email").value})});
+  document.getElementById("regMsg").textContent=d.message;
+  if(d.success) document.getElementById("bookEmail").value=document.getElementById("email").value;
+ }catch(err){document.getElementById("regMsg").textContent=err.message;}
+});
+async function loadStations(){
+ try{
+  const data=await api("/api/stations"),list=document.getElementById("stationsList");
+  list.replaceChildren();
+  data.forEach(s=>{
+   const div=document.createElement("div");div.className="station";
+   const title=document.createElement("h3");title.textContent=s.name;
+   const info=document.createElement("p");info.textContent=s.location+" | Available: "+(s.availableSlots??s.capacity-s.occupied)+" / "+s.capacity;
+   const btn=document.createElement("button");btn.textContent="Book Slot";
+   btn.onclick=async()=>{
+    try{
+     const result=await api("/api/stations/"+s.id+"/book",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:document.getElementById("bookEmail").value})});
+     document.getElementById("stationMsg").textContent=result.message;loadStations();
+    }catch(err){document.getElementById("stationMsg").textContent=err.message;}
+   };
+   div.append(title,info,btn);list.appendChild(div);
+  });
+ }catch(err){document.getElementById("stationMsg").textContent="Could not load stations: "+err.message;}
+}
+async function loadAdmin(){
+ try{
+  const [s,u,st,b]=await Promise.all([api("/api/admin/summary"),api("/api/admin/registrations"),api("/api/admin/stations"),api("/api/admin/bookings")]);
+  document.getElementById("summary").textContent="Users: "+s.totalUsers+" | Stations: "+s.totalStations+" | Bookings: "+s.totalBookings+" | Occupied slots: "+s.occupiedSlots+" | Available slots: "+s.availableSlots;
+  document.getElementById("users").textContent=u.length?u.map(x=>x.name+" ("+x.email+")").join(" | "):"No users registered";
+  document.getElementById("adminStations").textContent=st.map(x=>x.name+": "+x.occupied+" occupied, "+(x.availableSlots??x.capacity-x.occupied)+" available").join(" | ");
+  document.getElementById("bookings").textContent=b.length?b.map(x=>"#"+x.id+" "+x.stationName+" - "+x.status+" - "+x.userEmail).join(" | "):"No bookings yet";
+ }catch(err){document.getElementById("summary").textContent="Could not load dashboard: "+err.message;}
+}
+</script>
+</body>
+</html>
