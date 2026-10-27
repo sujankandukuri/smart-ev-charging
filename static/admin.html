@@ -1,0 +1,393 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart EV Charging - Admin Dashboard</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            color: #172033;
+        }
+
+        header {
+            background: #12352b;
+            color: white;
+            padding: 22px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 23px;
+        }
+
+        header p {
+            margin: 7px 0 0;
+            color: #d1fae5;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            border-radius: 7px;
+            padding: 10px 15px;
+            font-size: 14px;
+        }
+
+        .refresh {
+            background: #16a34a;
+            color: white;
+        }
+
+        main {
+            max-width: 1250px;
+            margin: 28px auto;
+            padding: 0 18px;
+        }
+
+        #message {
+            margin-bottom: 15px;
+            color: #b91c1c;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .card {
+            background: white;
+            padding: 21px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px #0000000a;
+        }
+
+        .card p {
+            margin: 0;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .card h2 {
+            font-size: 30px;
+            margin: 12px 0 0;
+            color: #166534;
+        }
+
+        .panel {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 3px 12px #0000000a;
+        }
+
+        .panel h2 {
+            margin-top: 0;
+            font-size: 20px;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 580px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+
+        th {
+            background: #f8fafc;
+            color: #475569;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 20px;
+            font-size: 12px;
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .completed {
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        .bar-bg {
+            height: 9px;
+            width: 130px;
+            background: #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 7px;
+        }
+
+        .bar {
+            height: 100%;
+            background: #16a34a;
+        }
+
+        footer {
+            text-align: center;
+            color: #64748b;
+            padding: 20px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+<header>
+    <div>
+        <h1>⚡ Smart EV Charging</h1>
+        <p>Admin Dashboard · Network Management</p>
+    </div>
+    <button class="refresh" onclick="loadDashboard()">
+        ↻ Refresh Data
+    </button>
+</header>
+
+<main>
+    <p id="message"></p>
+
+    <section class="cards">
+        <div class="card">
+            <p>Registered Users</p>
+            <h2 id="totalUsers">0</h2>
+        </div>
+        <div class="card">
+            <p>Charging Stations</p>
+            <h2 id="totalStations">0</h2>
+        </div>
+        <div class="card">
+            <p>Total Bookings</p>
+            <h2 id="totalBookings">0</h2>
+        </div>
+        <div class="card">
+            <p>Active Bookings</p>
+            <h2 id="activeBookings">0</h2>
+        </div>
+        <div class="card">
+            <p>Occupied Slots</p>
+            <h2 id="occupiedSlots">0</h2>
+        </div>
+        <div class="card">
+            <p>Available Slots</p>
+            <h2 id="availableSlots">0</h2>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>📍 Charging Stations & Slot Availability</h2>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Station</th>
+                    <th>Location</th>
+                    <th>Capacity</th>
+                    <th>Occupied</th>
+                    <th>Available</th>
+                </tr>
+                </thead>
+                <tbody id="stationsBody"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>👥 Registered Users</h2>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                </tr>
+                </thead>
+                <tbody id="usersBody"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>🔋 Booking Records</h2>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>Booking ID</th>
+                    <th>User Email</th>
+                    <th>Station</th>
+                    <th>Status</th>
+                    <th>Booked At</th>
+                </tr>
+                </thead>
+                <tbody id="bookingsBody"></tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+<footer>
+    Smart EV Charging Network Planning and Management System
+</footer>
+
+<script>
+    async function getJSON(url) {
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error("Could not load " + url);
+        }
+
+        return response.json();
+    }
+
+    function setText(id, value) {
+        document.getElementById(id).textContent = value;
+    }
+
+    function makeCell(value) {
+        const td = document.createElement("td");
+        td.textContent = value ?? "";
+        return td;
+    }
+
+    function emptyRow(columns, message) {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = columns;
+        td.textContent = message;
+        tr.appendChild(td);
+        return tr;
+    }
+
+    async function loadDashboard() {
+        const message = document.getElementById("message");
+        message.textContent = "Loading dashboard...";
+
+        try {
+            const [summary, stations, users, bookings] =
+                await Promise.all([
+                    getJSON("/api/admin/summary"),
+                    getJSON("/api/admin/stations"),
+                    getJSON("/api/admin/registrations"),
+                    getJSON("/api/admin/bookings")
+                ]);
+
+            setText("totalUsers", summary.totalUsers);
+            setText("totalStations", summary.totalStations);
+            setText("totalBookings", summary.totalBookings);
+            setText("activeBookings", summary.activeBookings);
+            setText("occupiedSlots", summary.occupiedSlots);
+            setText("availableSlots", summary.availableSlots);
+
+            const stationsBody = document.getElementById("stationsBody");
+            stationsBody.replaceChildren();
+
+            if (stations.length === 0) {
+                stationsBody.appendChild(
+                    emptyRow(6, "No stations found")
+                );
+            }
+
+            stations.forEach(station => {
+                const tr = document.createElement("tr");
+
+                tr.append(
+                    makeCell(station.id),
+                    makeCell(station.name),
+                    makeCell(station.location),
+                    makeCell(station.capacity),
+                    makeCell(station.occupied),
+                    makeCell(station.availableSlots)
+                );
+
+                stationsBody.appendChild(tr);
+            });
+
+            const usersBody = document.getElementById("usersBody");
+            usersBody.replaceChildren();
+
+            if (users.length === 0) {
+                usersBody.appendChild(
+                    emptyRow(3, "No users registered yet")
+                );
+            }
+
+            users.forEach(user => {
+                const tr = document.createElement("tr");
+                tr.append(
+                    makeCell(user.id),
+                    makeCell(user.name || "—"),
+                    makeCell(user.email)
+                );
+                usersBody.appendChild(tr);
+            });
+
+            const bookingsBody = document.getElementById("bookingsBody");
+            bookingsBody.replaceChildren();
+
+            if (bookings.length === 0) {
+                bookingsBody.appendChild(
+                    emptyRow(5, "No bookings yet")
+                );
+            }
+
+            bookings.forEach(booking => {
+                const tr = document.createElement("tr");
+                tr.append(
+                    makeCell(booking.id),
+                    makeCell(booking.userEmail || "Not provided"),
+                    makeCell(booking.stationName),
+                    makeCell(booking.status),
+                    makeCell(
+                        booking.bookedAt
+                            ? booking.bookedAt.replace("T", " ")
+                            : ""
+                    )
+                );
+
+                bookingsBody.appendChild(tr);
+            });
+
+            message.textContent = "";
+        } catch (error) {
+            message.textContent =
+                "Dashboard could not load. Check that the Spring Boot server is running.";
+            console.error(error);
+        }
+    }
+
+    loadDashboard();
+</script>
+</body>
+</html>
